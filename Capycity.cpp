@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 
 using namespace std;
 
@@ -42,10 +43,11 @@ public:
 class Building {
 private:
 	int grundpreis;
-	Materialien* benoetigteMaterialien;
+	map<string, int> benoetigteMaterialien;
+
 public:
 	Building();
-	Building(int gp, Materialien* bMats) : grundpreis(gp), benoetigteMaterialien{ bMats } {};
+	Building(int gp, map <string, int> bMats) : grundpreis(gp), benoetigteMaterialien(bMats) {};
 	int getGrundpreis() const;
 
 };
@@ -55,17 +57,17 @@ int Building::getGrundpreis() const {
 
 class Wasserkraftwerk : public Building {
 public:
-	Wasserkraftwerk(int gp, Materialien* bMats) : Building(gp, bMats) {};
+	Wasserkraftwerk(int gp, map <string, int> bMats) : Building(gp, bMats) {};
 
 };
 class Windkraftwerk : public Building {
 public:
-	Windkraftwerk(int gp, Materialien* bMats) : Building(gp, bMats) {};
+	Windkraftwerk(int gp, map <string, int> bMats) : Building(gp, bMats) {};
 
 };
 class Solarpanele : public Building {
 public:
-	Solarpanele(int gp, Materialien* bMats) : Building(gp, bMats) {};
+	Solarpanele(int gp, map <string, int> bMats) : Building(gp, bMats) {};
 };
 
 int* CapycitySim::bauflaecheAngeben() {
@@ -203,86 +205,61 @@ int* CapycitySim::flaecheFreigeben(int* bauflaeche) {
 }
 
 void CapycitySim::welcheKosten() {
+
+
 	while ((anzahlWA + anzahlWI + anzahlSO) == 0) {
 		cout << "Es existiert noch kein Gebäude \n";
 		gebaeudeSetzen(bauflaeche);
 	}
-	int holzanzahlwa = 0, metallanzahlwa = 0, kunststoffanzahlwa = 0;
-	int holzanzahlwi = 0, metallanzahlwi = 0, kunststoffanzahlwi = 0;
-	int holzanzahlso = 0, metallanzahlso = 0, kunststoffanzahlso = 0;
 
 	Holz hlz(40, "Holz");
 	Metall mtll(100, "Metall");
 	Kunststoff knststff(20, "Kunststoff");
 
-	Materialien* matsWA = new Materialien[5]{ hlz, hlz, hlz, mtll, knststff };
-	Materialien* matsWI = new Materialien[6]{ mtll , mtll, mtll, mtll, hlz, knststff };
-	Materialien* matsSO = new Materialien[8]{ hlz, hlz, mtll, mtll, mtll, mtll, knststff, knststff };
+	//Carlas Idee, da von v2.0 nicht viel geändert werden muss. Verwaltung bereits in den Gebaueden, deshalb keine extra Klasse notwendig.
 
+	map <string, int> matsWA;
+	matsWA["Holz"] = 3;
+	matsWA["Metall"] = 1;
+	matsWA["Kunststoff"] = 1;
+
+	map <string, int> matsWI;
+	matsWI["Holz"] = 1;
+	matsWI["Metall"] = 4;
+	matsWI["Kunststoff"] = 1;
+
+	map <string, int> matsSO;
+	matsSO["Holz"] = 2;
+	matsSO["Metall"] = 4;
+	matsSO["Kunststoff"] = 2;
 
 	Wasserkraftwerk wa(1000, matsWA);
 	Windkraftwerk wi(2000, matsWI);
 	Solarpanele so(4000, matsSO);
 
 
-	for (int i = 0; i < 5; i++) {
-		if (matsWA[i].getMats() == "Holz") {
-			holzanzahlwa++;
-		}
-		else if (matsWA[i].getMats() == "Metall") {
-			metallanzahlwa++;
-		}
-		else if (matsWA[i].getMats() == "Kunststoff") {
-			kunststoffanzahlwa++;
-		}
-	}
-	for (int i = 0; i < 6; i++) {
-		if (matsWI[i].getMats() == "Holz") {
-			holzanzahlwi++;
-		}
-		else if (matsWI[i].getMats() == "Metall") {
-			metallanzahlwi++;
-		}
-		else if (matsWI[i].getMats() == "Kunststoff") {
-			kunststoffanzahlwi++;
-		}
-	}
-	for (int i = 0; i < 8; i++) {
-		if (matsSO[i].getMats() == "Holz") {
-			holzanzahlso++;
-		}
-		else if (matsSO[i].getMats() == "Metall") {
-			metallanzahlso++;
-		}
-		else if (matsSO[i].getMats() == "Kunststoff") {
-			kunststoffanzahlso++;
-		}
-	}
 
-	wasserpreis = wa.getGrundpreis() + holzanzahlwa * hlz.getPreis() + metallanzahlwa * mtll.getPreis() + kunststoffanzahlwa * knststff.getPreis();
+
+	wasserpreis = wa.getGrundpreis() + matsWA.find("Holz")->second * hlz.getPreis() + matsWA.find("Metall")->second * mtll.getPreis() + matsWA.find("Kunststoff")->second * knststff.getPreis();
 	cout << "Ein Wasserkraftwerk kostet: " << wasserpreis << "\n";
 	cout << "Dafuer wird folgendes Material benoetigt: \n";
-	for (int i = 0; i < 5; i++) {
-		cout << matsWA[i].getMats() << " ";
-	}
-	cout << "\n";
+	cout << matsWA.find("Holz")->second << " mal " << matsWA.find("Holz")->first << "\n";
+	cout << matsWA.find("Metall")->second << " mal " << matsWA.find("Metall")->first << "\n";
+	cout << matsWA.find("Kunststoff")->second << " mal " << matsWA.find("Kunststoff")->first << "\n";
 
-	windpreis = wi.getGrundpreis() + holzanzahlwi * hlz.getPreis() + metallanzahlwi * mtll.getPreis() + kunststoffanzahlwi * knststff.getPreis();
+	windpreis = wi.getGrundpreis() + matsWI.find("Holz")->second * hlz.getPreis() + matsWI.find("Metall")->second * mtll.getPreis() + matsWI.find("Kunststoff")->second * knststff.getPreis();
 	cout << "Ein Windkraftwerk kostet: " << windpreis << "\n";
 	cout << "Dafuer wird folgendes Material benoetigt: \n";
-	for (int i = 0; i < 6; i++) {
-		cout << matsWI[i].getMats() << " ";
-	}
-	cout << "\n";
+	cout << matsWI.find("Holz")->second << " mal " << matsWI.find("Holz")->first << "\n";
+	cout << matsWI.find("Metall")->second << " mal " << matsWI.find("Metall")->first << "\n";
+	cout << matsWI.find("Kunststoff")->second << " mal " << matsWI.find("Kunststoff")->first << "\n";
 
-	solarpreis = so.getGrundpreis() + holzanzahlso * hlz.getPreis() + metallanzahlso * mtll.getPreis() + kunststoffanzahlso * knststff.getPreis();
+	solarpreis = so.getGrundpreis() + matsSO.find("Holz")->second * hlz.getPreis() + matsSO.find("Metall")->second * mtll.getPreis() + matsSO.find("Kunststoff")->second * knststff.getPreis();
 	cout << "Ein Solarpanel kostet: " << solarpreis << "\n";
 	cout << "Dafuer wird folgendes Material benoetigt: \n";
-	for (int i = 0; i < 8; i++) {
-		cout << matsSO[i].getMats() << " ";
-	}
-	cout << "\n";
-
+	cout << matsSO.find("Holz")->second << " mal " << matsSO.find("Holz")->first << "\n";
+	cout << matsSO.find("Metall")->second << " mal " << matsSO.find("Metall")->first << "\n";
+	cout << matsSO.find("Kunststoff")->second << " mal " << matsSO.find("Kunststoff")->first << "\n";
 
 	cout << "Wie viele Wasserkraftwerke wurden gebaut: " << anzahlWA << "\n";
 	cout << "Wie viele Windkraftwerke wurden gebaut: " << anzahlWI << "\n";
