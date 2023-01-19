@@ -21,7 +21,7 @@ int main() {
 		cout << "Exit: 4 \n";
 		cin >> menuepunkt;
 
-
+		
 		if (menuepunkt == 1) {
 			bool innerhalbDerBauflaeche = true;
 			bool flaecheBelegt = false;
